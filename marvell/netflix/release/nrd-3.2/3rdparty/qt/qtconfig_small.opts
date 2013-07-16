@@ -1,0 +1,1 @@
+-no-svg -no-declarative -no-scripttools -no-xmlpatterns -no-multimedia -no-accessibility -qconfig netflix -depths 32 -no-exceptions -no-script -no-sql-odbc -no-sql-tds -no-sql-sqlite2
