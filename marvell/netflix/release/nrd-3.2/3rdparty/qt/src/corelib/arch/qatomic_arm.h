@@ -225,11 +225,21 @@ inline bool QBasicAtomicInt::testAndSetRelease(int expectedValue, int newValue)
 
 inline int QBasicAtomicInt::fetchAndStoreOrdered(int newValue)
 {
-    int originalValue;
-    asm volatile("swp %0,%2,[%3]"
-                 : "=&r"(originalValue), "=m" (_q_value)
-                 : "r"(newValue), "r"(&_q_value)
-                 : "cc", "memory");
+    register int originalValue;
+    register int result;
+    asm volatile("dmb\n":::"memory");
+    asm volatile("0:\n"
+                 "ldrex %[originalValue], [%[_q_value]]\n"
+                 "strex %[result], %[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [originalValue] "=&r" (originalValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    asm volatile("":::"memory");
     return originalValue;
 }
 
@@ -354,11 +364,21 @@ __asm T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
 template <typename T>
 Q_INLINE_TEMPLATE T *QBasicAtomicPointer<T>::fetchAndStoreOrdered(T *newValue)
 {
-    T *originalValue;
-    asm volatile("swp %0,%2,[%3]"
-                 : "=&r"(originalValue), "=m" (_q_value)
-                 : "r"(newValue), "r"(&_q_value)
-                 : "cc", "memory");
+    register T *originalValue;
+    register int result;
+    asm volatile("dmb\n":::"memory");
+    asm volatile("0:\n"
+                 "ldrex %[originalValue], [%[_q_value]]\n"
+                 "strex %[result], %[newValue], [%[_q_value]]\n"
+                 "teq %[result], #0\n"
+                 "bne 0b\n"
+                 : [originalValue] "=&r" (originalValue),
+                   [result] "=&r" (result),
+                   "+m" (_q_value)
+                 : [newValue] "r" (newValue),
+                   [_q_value] "r" (&_q_value)
+                 : "cc");
+    asm volatile("":::"memory");
     return originalValue;
 }
 
