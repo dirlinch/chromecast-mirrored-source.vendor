@@ -206,7 +206,7 @@ QHostInfo QHostInfoAgent::fromName(const QString &hostName)
     addrinfo *res = 0;
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
-    hints.ai_family = PF_UNSPEC;
+    hints.ai_family = PF_INET;
 #ifdef Q_ADDRCONFIG
     hints.ai_flags = Q_ADDRCONFIG;
 #endif
